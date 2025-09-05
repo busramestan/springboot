@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("rest/api/product")
+@RequestMapping("/rest/api/product")
 public class ProductController {
     private final ProductService productService;
 
@@ -24,19 +24,30 @@ public class ProductController {
         return productService.getAllProducts();
     }
 
-    @GetMapping(path = "by-id/{id}")
+    @GetMapping(path = "/by-id/{id}")
     public Product getProductById(@PathVariable Long id){
         return productService.getProductById(id);
     }
 
     @PutMapping(path = "update/{id}")
-    public Product updateProdct(@PathVariable(name = "id") Long id, @RequestBody Product product) {
+    public Product updateProduct(@PathVariable(name = "id") Long id, @RequestBody Product product) {
         return productService.updateProduct(id,product);
     }
 
-    @DeleteMapping(path = "delete/{id}")
+    @DeleteMapping(path = "/delete/{id}")
     public void deleteProduct(@PathVariable(name = "id") Long id){
         productService.deleteProduct(id);
+    }
+
+    // Transaction test endpointi
+    @PostMapping("/new-transaction")
+    public String createWithNewTransaction(@RequestBody Product product) {
+        try {
+            productService.createProductInNewTransaction(product);
+            return "Ürün ayrı bir transaction içinde başarıyla eklendi!";
+        } catch (Exception e) {
+            return "Hata oluştu: " + e.getMessage();
+        }
     }
 
 }
