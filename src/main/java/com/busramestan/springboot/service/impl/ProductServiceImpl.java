@@ -5,10 +5,12 @@ import com.busramestan.springboot.repository.ProductRepository;
 import com.busramestan.springboot.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -62,5 +64,21 @@ public class ProductServiceImpl implements ProductService {
         // Bilerek hata olusturarak rollback'i gostermek icin
         if (product.getName().equals("error")) throw new RuntimeException("Bu ürün ismi girilemez!! ");
         productRepository.save(product);
+    }
+
+    // READ_COMMITTED isolation testi
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Optional<Product> testReadCommitted(Long id) {
+        return productRepository.findById(id);
+    }
+
+    // REPEATABLE_READ isolation testi
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public Optional<Product> testRepeatableRead(Long id) {
+        Product firstRead = productRepository.findById(id).orElse(null);
+        Product secondRead = productRepository.findById(id).orElse(null);
+        System.out.println("First Read: " + firstRead.getPrice());
+        System.out.println("Second Read: " + secondRead.getPrice());
+        return Optional.ofNullable(firstRead);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,6 +49,17 @@ public class ProductController {
         } catch (Exception e) {
             return "Hata oluştu: " + e.getMessage();
         }
+    }
+    // READ_COMMITTED testi endpointi
+    @GetMapping("/read-committed/{id}")
+    public Optional<Product> readCommittedTest(@PathVariable Long id) {
+        return productService.testReadCommitted(id);
+    }
+
+    // REPEATABLE_READ testi endpointi
+    @GetMapping("/repeatable-read/{id}")
+    public Optional<Product> repeatableReadTest(@PathVariable Long id) {
+        return productService.testRepeatableRead(id);
     }
 
 }
