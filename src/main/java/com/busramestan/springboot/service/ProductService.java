@@ -1,5 +1,7 @@
 package com.busramestan.springboot.service;
 
+import com.busramestan.springboot.dto.request.ProductRequest;
+import com.busramestan.springboot.dto.response.ProductResponse;
 import com.busramestan.springboot.entity.Product;
 
 import java.util.List;
@@ -7,14 +9,21 @@ import java.util.Optional;
 
 public interface ProductService {
 
-    Product createProduct(Product product);
-    Product getProductById(Long id);
-    List<Product> getAllProducts();
-    Product updateProduct(Long id, Product product);
+    ProductResponse createProduct(ProductRequest request);
+
+    ProductResponse getProductById(Long id);
+
+    List<ProductResponse> getAllProducts();
+
+    ProductResponse updateProduct(Long id, ProductRequest request);
+
     void deleteProduct(Long id);
-    void createProductInNewTransaction(Product product);
-    Optional<Product> testReadCommitted(Long id);
-    Optional<Product> testRepeatableRead(Long id);
+
+    ProductResponse createProductInNewTransaction(ProductRequest request);
+
+    Optional<ProductResponse> testReadCommitted(Long id);
+
+    Optional<ProductResponse> testRepeatableRead(Long id);
 
 
 }

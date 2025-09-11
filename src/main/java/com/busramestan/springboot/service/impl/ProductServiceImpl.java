@@ -1,9 +1,12 @@
 package com.busramestan.springboot.service.impl;
 
+import com.busramestan.springboot.dto.request.ProductRequest;
+import com.busramestan.springboot.dto.response.ProductResponse;
 import com.busramestan.springboot.entity.Product;
 import com.busramestan.springboot.repository.ProductRepository;
 import com.busramestan.springboot.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -11,44 +14,56 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     @Transactional
-    public Product createProduct(Product product) {
-        return productRepository.save(product);
+    public ProductResponse createProduct(ProductRequest request) {
+        Product product = modelMapper.map(request, Product.class);
+        Product savedProduct = productRepository.save(product);
+        return modelMapper.map(savedProduct,ProductResponse.class);
     }
 
     @Override
-    public Product getProductById(Long id) {
-        return productRepository.findById(id).orElse(null);
+    public ProductResponse getProductById(Long id) {
+        Product product =productRepository.findById(id).orElse(null);
+        if (product == null) return null;
+        return modelMapper.map(product,ProductResponse.class);
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAllProducts() {
+        return productRepository.findAll()
+                .stream()
+                .map(product -> modelMapper.map(product,ProductResponse.class))
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public Product updateProduct(Long id, Product product) {
-        Product dbProduct = getProductById(id);
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
+        Product dbProduct = productRepository.findById(id).orElse(null);
+        if (dbProduct == null) return null;
 
-        dbProduct.setName(product.getName());
-        dbProduct.setDescription(product.getDescription());
-        dbProduct.setPrice(product.getPrice());
+        dbProduct.setName(request.getName());
+        dbProduct.setDescription(request.getDescription());
+        dbProduct.setPrice(request.getPrice());
 
-        return productRepository.save(dbProduct);
+        Product updatedProduct = productRepository.save(dbProduct);
+        return modelMapper.map(updatedProduct,ProductResponse.class);
+
     }
 
     @Override
     @Transactional
     public void deleteProduct(Long id) {
-        Product dbProduct = getProductById(id);
+        Product dbProduct = productRepository.findById(id).orElse(null);
         if (dbProduct != null){
             productRepository.delete(dbProduct);
         }
@@ -60,25 +75,29 @@ public class ProductServiceImpl implements ProductService {
     // Böylece diğer işlemler etkilenmez
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createProductInNewTransaction(Product product) {
+    public ProductResponse createProductInNewTransaction(ProductRequest request) {
+        Product product = modelMapper.map(request,Product.class);
         // Bilerek hata olusturarak rollback'i gostermek icin
         if (product.getName().equals("error")) throw new RuntimeException("Bu ürün ismi girilemez!! ");
-        productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+        return modelMapper.map(savedProduct,ProductResponse.class);
+
     }
 
     // READ_COMMITTED isolation testi
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Optional<Product> testReadCommitted(Long id) {
-        return productRepository.findById(id);
+    public Optional<ProductResponse> testReadCommitted(Long id) {
+        return productRepository.findById(id).map(product -> modelMapper.map(product, ProductResponse.class));
     }
 
     // REPEATABLE_READ isolation testi
     @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public Optional<Product> testRepeatableRead(Long id) {
+    public Optional<ProductResponse> testRepeatableRead(Long id) {
         Product firstRead = productRepository.findById(id).orElse(null);
         Product secondRead = productRepository.findById(id).orElse(null);
         System.out.println("First Read: " + firstRead.getPrice());
         System.out.println("Second Read: " + secondRead.getPrice());
-        return Optional.ofNullable(firstRead);
+        return Optional.ofNullable(firstRead)
+                .map(product -> modelMapper.map(product, ProductResponse.class));
     }
 }
