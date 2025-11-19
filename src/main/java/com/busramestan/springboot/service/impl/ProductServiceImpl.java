@@ -7,6 +7,8 @@ import com.busramestan.springboot.repository.ProductRepository;
 import com.busramestan.springboot.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,12 +23,14 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ModelMapper modelMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Override
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
         Product product = modelMapper.map(request, Product.class);
         Product savedProduct = productRepository.save(product);
+        logger.info("Saved product :");
         return modelMapper.map(savedProduct,ProductResponse.class);
     }
 

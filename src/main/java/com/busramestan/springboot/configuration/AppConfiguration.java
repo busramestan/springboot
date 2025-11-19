@@ -1,11 +1,11 @@
-package com.busramestan.springboot.config;
+package com.busramestan.springboot.configuration;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class AppConfig {
+public class AppConfiguration {
     @Bean
     public ModelMapper modelMapper(){
 

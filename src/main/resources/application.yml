@@ -9,5 +9,9 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  security:
+     jwt:
+       secret-key: nKUe1wAZF9/wScjjW0gvhagV8tOK4vD4aHZ5a4a6Md8=
+
 server:
   port: 8080
